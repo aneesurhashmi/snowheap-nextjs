@@ -98,7 +98,7 @@ export default function MyArticle({ params: { articleId } }: PageProps) {
       handle_cache("full")
     }
   };
-  
+
   const fetch_article = () => {
 
     fetch(`http://localhost:3000/api/article/${articleId}`)
@@ -124,65 +124,41 @@ export default function MyArticle({ params: { articleId } }: PageProps) {
     <div className="p-10border-2 m-2 shadow-lg">
       {!loading ? (<>
         {preference == "full" ? (<>
-          <button id="summary" onClick={handleChange}>Read Summary</button>
-          <div>
-            {/* {preference ? () : (<button id="full" onClick={handleChange}>Read Full Article</button>)} */}
+          <button id="summary" onClick={handleChange}
+            style={{ border: "solid black 2px", padding: "2px", backgroundColor: '#14ded0' }}>
+            Read Summary
+          </button>
 
-            {/* <>
-              <label for="full" >Read Full Article</label>
-              <input onChange={handleChange} id="full" value="full" type="radio" />
-              <label for="summary">Read Summary</label>
-              <input onChange={handleChange} id="summary" value="summary" type="radio" />
-            </> */}
-            {/* <select onChange={handleChange} value={preference}>
-              <option value="full">
-                Full Article
-              </option>
-              <option value="summary">Summary</option>
-            </select> */}
+          <h1 style={{ fontSize: "30px", textAlign: "center", fontWeight: "bold" }}>{article.title}</h1>
+          <hr />
+          <br />
+          <div >
+            <img src={article.img} style={{
+            }} />
+
           </div>
-          <p>{article.title}</p>
-          <img src={article.img} />
-          <p className=" bg-green-300 ">{article.content}</p>
+          <h2 style={{ fontSize: "20px", textAlign: "center", }}>Full Article:</h2>
+          <p className="p-10 bg-blue-300 ">{article.content}</p>
         </>
         ) : (<>
+
           <div>
-            <button id="full" onClick={handleChange}>Read Full Article</button>
-            {/* <>
-              <label for="full">Read Full Article</label>
-              <input onChange={handleChange} isChecked={preference == "full"} id="full" value="full" type="radio" />
-              <label for="summary">Read Summary</label>
-              <input onChange={handleChange} isChecked={true} id="summary" value="summary" type="radio" />
-            </> */}
-            {/* <select onChange={handleChange}>
-              <option defaultValue={"full"} value="full">
-                Full Article
-              </option>
-              <option value="summary">Summary</option>
-            </select> */}
+            <button id="full" onClick={handleChange}
+              style={{ border: "solid black 2px", padding: "2px", backgroundColor: '#14ded0' }}>
+              Read Full Article
+            </button>
           </div>
-          <p>{article.title}</p>
-          <p>caption for the article image: {article.imgCaption}</p>
-          {/* <img src={article.img} /> */}
-          <p className=" bg-green-300 ">{article.content}</p>
+          <h1 style={{ fontSize: "30px", textAlign: "center", fontWeight: "bold" }}>{article.title}</h1>
+          <hr />
+          <br />
+          <h2 style={{ fontSize: "20px", textAlign: "center", }}>Caption for the article image:</h2>
+          <p className="p-10 bg-blue-300 ">{article.imgCaption}</p>
+          <h2 style={{ fontSize: "20px", textAlign: "center", }}>Summary:</h2>
+          <p className="p-10 bg-blue-300 ">{article.content}</p>
         </>
         )}</>) : <Loading />}
 
-      {/* <UserPreference handleChange={handleChange} /> */}
     </div>
   );
 }
 
-// // for static rendering
-// export async function generateStaticParams() {
-//   const filePath = path.join(process.cwd(), "./data/articles/english.json");
-//   console.log(filePath);
-//   const jsonData = await fsPromises.readFile(filePath);
-//   console.log(filePath);
-
-//   //   @ts-ignore
-//   const articles: Articles[] = JSON.parse(jsonData);
-//   return articles.map((article) => ({
-//     articleId: article.id.toString(),
-//   }));
-// }

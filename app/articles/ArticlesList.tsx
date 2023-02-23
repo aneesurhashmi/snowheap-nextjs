@@ -9,6 +9,8 @@ import Head from "next/head";
 const fetchJSON = async () => {
   const filePath = path.join(process.cwd(), "./data/articles/english.json");
   const jsonData = await fsPromises.readFile(filePath);
+  console.log(jsonData);
+  
   //   @ts-ignore
   const objectData = JSON.parse(jsonData);
 
