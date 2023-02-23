@@ -33,47 +33,142 @@ export default function MyArticle({ params: { articleId } }: PageProps) {
     img: "123",
     content: "123123",
     title: "abc",
+    imgCaption: ""
   });
   const [preference, setPreference] = useState("full");
+  const [loading, setloading] = useState(false);
+
+  const get_summary = async (payload: string) => {
+    setloading(true)
+    const endpoint: string = 'http://127.0.0.1:5000/summarize'
+    try {
+      const fetchResponse = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+
+        // body: JSON.stringify({ "query": "https://fujifilm-x.com/wp-content/uploads/2021/01/gfx100s_sample_04_thum-1.jpg:article:On a night fraught with tension, Italy clinched its first major title for 15 years with a penalty shootout win over England in the Euro 2020 final.Luke Shaw's goal inside the opening two minutes gave England a lead it looked like it would hold onto all night, before a goalmouth scramble midway through the second half allowed Leonardo Bonucci to poke home an equalizer for Italy.For the remainder of the match it felt as though extra-time and penalties were inevitable, as neither side seemed willing or brave enough to commit enough men forward to really trouble the opposing defenders.England had suffered innumerable heartbreaks on penalties over the years and this time it was Italy's turn to inflict yet more pain on beleaguered English fans as Marcus Rashford, Jadon Sancho and Bukayo Saka all missed from the spot" })
+        body: JSON.stringify({ "query": payload })
+      });
+      // return fetchResponse
+      const data: string = await fetchResponse.text();
+      setloading(false)
+
+      return data;
+      // return "AS"
+    } catch (e) {
+      setloading(false)
+      return e;
+    }
+  }
+
+
+  const handle_cache = (text_len: string,) => {
+    if (sessionStorage.getItem(`${article.id}_${text_len}`)) {
+      console.log("available in ss");
+      setArticle(JSON.parse(sessionStorage.getItem(`${article.id}_${text_len}`)))
+    }
+    else {
+      console.log("fetching");
+      fetch_article()
+    }
+  }
 
   const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    // setPreference(e.target.value);
-    if (e.target.value == "summary") {
-      console.log("I will give u the summary");
-    } else {
-      console.log("I will give u full text");
+    setPreference(e.target.id)
+    if (e.target.id == "summary") {
+      // setPreference(e.target.value)
+      if (sessionStorage.getItem(`${article.id}_summary`)) {
+        setArticle(JSON.parse(sessionStorage.getItem(`${article.id}_summary`)))
+        return ""
+      }
 
+      const payload = `${article.img}:article:${article.content.split("\n").join("")}`
+      const mySummary: string = await get_summary(payload)
+      // console.log(mySummary);
+      // console.log(mySummary.length);
+      const myres = mySummary.split("summary:")
+      const articleSummary = myres[1]
+      const imgCaption = myres[0]
+      setArticle({ ...article, content: articleSummary, imgCaption })
+      sessionStorage.setItem(`${article.id}_summary`, JSON.stringify({ ...article, content: articleSummary, imgCaption }))
+    } else {
+
+      handle_cache("full")
     }
   };
+  
+  const fetch_article = () => {
 
-  // @ts-ignore
-  useEffect(() => {
     fetch(`http://localhost:3000/api/article/${articleId}`)
       .then((res) => res.json())
       .then((data) => {
         setArticle(data);
+        sessionStorage.setItem(`${data.id}_full`, JSON.stringify(data))
+
       })
       .catch((err) => {
         console.log(err);
       });
+  }
+  // @ts-ignore
+  useEffect(() => {
+    // fetch_article()
+    handle_cache("full")
   }, []);
 
   return !article.id ? (
     <Loading />
   ) : (
     <div className="p-10border-2 m-2 shadow-lg">
+      {!loading ? (<>
+        {preference == "full" ? (<>
+          <button id="summary" onClick={handleChange}>Read Summary</button>
+          <div>
+            {/* {preference ? () : (<button id="full" onClick={handleChange}>Read Full Article</button>)} */}
+
+            {/* <>
+              <label for="full" >Read Full Article</label>
+              <input onChange={handleChange} id="full" value="full" type="radio" />
+              <label for="summary">Read Summary</label>
+              <input onChange={handleChange} id="summary" value="summary" type="radio" />
+            </> */}
+            {/* <select onChange={handleChange} value={preference}>
+              <option value="full">
+                Full Article
+              </option>
+              <option value="summary">Summary</option>
+            </select> */}
+          </div>
+          <p>{article.title}</p>
+          <img src={article.img} />
+          <p className=" bg-green-300 ">{article.content}</p>
+        </>
+        ) : (<>
+          <div>
+            <button id="full" onClick={handleChange}>Read Full Article</button>
+            {/* <>
+              <label for="full">Read Full Article</label>
+              <input onChange={handleChange} isChecked={preference == "full"} id="full" value="full" type="radio" />
+              <label for="summary">Read Summary</label>
+              <input onChange={handleChange} isChecked={true} id="summary" value="summary" type="radio" />
+            </> */}
+            {/* <select onChange={handleChange}>
+              <option defaultValue={"full"} value="full">
+                Full Article
+              </option>
+              <option value="summary">Summary</option>
+            </select> */}
+          </div>
+          <p>{article.title}</p>
+          <p>caption for the article image: {article.imgCaption}</p>
+          {/* <img src={article.img} /> */}
+          <p className=" bg-green-300 ">{article.content}</p>
+        </>
+        )}</>) : <Loading />}
+
       {/* <UserPreference handleChange={handleChange} /> */}
-      <div>
-        <select onChange={handleChange}>
-          <option defaultValue={"full"} value="full">
-            Full Article
-          </option>
-          <option value="summary">Summary</option>
-        </select>
-      </div>
-      <p>{article.title}</p>
-      <img src={article.img} />
-      <p className=" bg-green-300 ">{article.content}</p>
     </div>
   );
 }
